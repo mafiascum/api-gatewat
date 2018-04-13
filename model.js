@@ -3,9 +3,8 @@
  */
 
 const db = require('./models');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const fs = require('fs');
+
+const authMs = require('./auth/mafiascum');
 
 /*
  * Get access token.
@@ -66,18 +65,7 @@ module.exports.getRefreshToken = async function(refreshToken) {
  */
 
 module.exports.getUser = async function (username, password) {
-    const result = await db.sequelize.query(
-        `SELECT user_id, user_password as password_hash FROM phpbb_users WHERE username = $1`, 
-        {bind: [username], type: db.sequelize.QueryTypes.SELECT }
-    );
-
-    if (!result) {
-        return false;
-    }
-
-    const row = result[0];
-  
-    return bcrypt.compareSync(password, row.password_hash) ? {id: row.user_id} : false;
+    return authMs(username, password);
 };
 
 /**
